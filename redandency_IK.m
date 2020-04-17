@@ -1,3 +1,7 @@
+% This is an example for manipulator with theta1~4
+% and in task space, [x, y] is the position of EE
+% in this case, it is redandent in terms of [x, y]
+% we tested jacobian-based IK using svd-based pseudo inverse
 function redandency_IK
 clear;clc;format compact;
 the10 = 15*pi/180;
