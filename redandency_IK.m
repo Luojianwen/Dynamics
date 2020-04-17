@@ -11,17 +11,20 @@ the1 = the10 + zeros(len);
 the2 = the20 + zeros(len);
 the3 = the30 + zeros(len);
 the4 = the40 + zeros(len);
+% let end-effector move around a eclispe with r1 and r2
+% you can change r1 r2 and len to see the accuracy of jacobian-based IK
 r1 = 0.1;
 r2 = 0.2;
 x = x0 - r1 + r1*cos(t);
 y = y0 + r2*sin(t);
-xa = zeros(len);
+% actual position computed by FK is stored in xa ya
+xa = zeros(len); 
 ya = zeros(len);
 for i = 1:len-1
     J = getJacobian(the1(i), the2(i), the3(i), the4(i));
     dx = x(i+1) - x(i);
     dy = y(i+1) - y(i);
-    dthe = pinv(J) * [dx, dy]';
+    dthe = pinv(J) * [dx, dy]'; % This is svd-based pseudo inverse
     the1(i+1) = the1(i) + dthe(1);
     the2(i+1) = the2(i) + dthe(2);
     the3(i+1) = the3(i) + dthe(3);
