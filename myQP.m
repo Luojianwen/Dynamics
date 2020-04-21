@@ -1,44 +1,67 @@
-function myQP
-clear;clc;format compact;
+function [ddq, tau, lambda] = myQP(ddqh1, ddqh2, ddqh3, delta_ddqh1, delta_ddqh2, delta_ddqh3, lambda_y, alpha)
+% clear;clc;format compact;
 % Q = eye(3);
 % fun = @(x) x^2 + 10;
 % X = fmincon(fun, 0,[],[])
 global mh Ih m1 m2 m3;
-global l0 l1 l2 l11 l22 l33;
+global l0 l1 l2 l3 l11 l22 l33;
 global Sk Skplus Sh;
 global tau0 dtau lambda_min lambda_max;
 mh = 0.0001; Ih = 0.0001; m1 = 2.5; m2 = 1.2; m3 = 0.1;
-l0 = 0.02; l1 = 0.2; l2 = 0.2; l11 = 0.18; l22 = 0.15; l33 = 0.005;
+l0 = 0.01; l1 = 0.2; l2 = 0.2; l3 = 0.05; l11 = 0.05; l22 = 0.05; l33 = 0.005;
 Sk = [eye(2), zeros(2,4)]; Sh = [zeros(3,3),eye(3),zeros(3,6)];
 Skplus = [zeros(4,2), eye(4,4)];
-tau0 = 0; dtau = 200; lambda_min = [-100, -100]'; lambda_max = [100,-30]';
+tau0 = 0; dtau = 30;
 
-% len = 10;
-% force = linspace(36, 40, len);
-% tau = zeros(6,len);
-
-t = [60*pi/180, 120*pi/180, -60*pi/180, 0, 0, 0];
-t_dot = [0.0 0.0 0.0 0.0 0.0 0.0];
-[A, h, Jc] = computeAh(t, t_dot);
+q = [60*pi/180, 120*pi/180, -60*pi/180, 0, 0, 0];
+dotq = [0.0 0.0 0.0 0.0 0.0 0.0];
+[A, h, Jc] = computeAh(q, dotq);
 [Q, R] = qr(Jc');
-tmp = Skplus*Q';
-S_bar = dynamicalInv(A, tmp)*(tmp);
+
+SQ = Skplus*Q';
+S_bar = dynamicalInv(A, SQ)*(SQ);
 Nkplus = eye(6) - S_bar;
 R_bar = R(1:2,1:2)^-1*Sk*Q'*Nkplus;
 W1 = [S_bar*A, Nkplus];
 W2 = [R_bar*A, -R_bar];
 W = [W1;-W1;W2;-W2];
+H = [eye(6), zeros(6,6);zeros(6,6), 2000*eye(6)]; f=zeros(12,1);
+
+lambda_ylim = alpha*(Jc*A^-1*Jc')^-1*Jc*[0,0,0,delta_ddqh1, delta_ddqh2, delta_ddqh3]';
+lambda_min_bound = 1;
+lambda_min = [-lambda_min_bound, -100]'; lambda_max = [lambda_min_bound,-35]';
+lambda_max(2) = lambda_y + lambda_ylim(2);
 
 b = [-S_bar*h+tau0+dtau; S_bar*h-tau0+dtau; -R_bar*h+lambda_max; R_bar*h-lambda_min];
-H = eye(12);f=zeros(12,1);
+
 % tic
-x = quadprog(H, f, W, b, Sh, zeros(3,1));
+x = quadprog(H, f, W, b, Sh, [ddqh1, ddqh2, ddqh3]');
+ddq = x(1:6);
+tau = (W1 * x + S_bar*h);
+lambda = (W2 * x + R_bar*h);
 % toc
-ddq = x(1:6)'
-delta_tau = x(7:12)'
-lambda = (W2 * x + R_bar*h)'
-tau = (W1 * x + S_bar*h)'
-(m1+m2+m3+mh)*9.8
+
+% ddq = x(1:6)'
+% delta_tau = x(7:12)'
+% lambda = (W2 * x + R_bar*h)'
+% tau = (W1 * x + S_bar*h)'
+% (m1+m2+m3+mh)*9.8
+% A*ddq'+h - tau' - Jc'*lambda'
+
+% wd = 1;
+% figure(1); 
+% plot(1:len, tau(1,:), 'r' , 'Linewidth', wd); hold on;
+% plot(1:len, tau(2,:), 'b' , 'Linewidth', wd);
+% plot(1:len, tau(3,:), 'k' , 'Linewidth', wd);
+% title('SuperLimb tau');
+% figure(2); 
+% plot(1:len, tau(4,:), 'r' , 'Linewidth', wd); hold on;
+% plot(1:len, tau(5,:), 'b' , 'Linewidth', wd);
+% plot(1:len, tau(6,:), 'k' , 'Linewidth', wd);
+% title('Human tau');
+% figure(3)
+% plot(1:len, lambda(1,:), 'r' ,'Linewidth', wd); hold on;
+% plot(1:len, lambda(2,:), 'b' ,'Linewidth', wd);
 end
 
 function W_bar = dynamicalInv(A, W)
@@ -52,7 +75,7 @@ function [A, h, Jc] = computeAh(t, t_dot)
 % t = [theta1, theta2, theta3, xh, yh, thetah]^T;
 % t_dot = [dtheta1, dtheta2, dtheta3, dxh, dyh, dthetah]^T;
 global mh Ih m1 m2 m3;
-global l0 l1 l2 l11 l22 l33;
+global l0 l1 l2 l3 l11 l22 l33;
 sh    = sin(t(6));
 s1h   = sin(t(1)+t(6));
 s12h  = sin(t(1)+t(2)+t(6));
@@ -76,7 +99,10 @@ c123h = cos(t(1)+t(2)+t(3)+t(6));
          l1*c1h+l2*c12h+l33*c123h  l2*c12h+l33*c123h  l33*c123h 0 1  l0*ch+l1*c1h+l2*c12h+l33*c123h
     ];
     A = Ah + J1'* diag([m1,m1])*J1 + J2'*diag([m2,m2])*J2 + J3'*diag([m3,m3])*J3;
-    Jc = J3;
+    Jc = [...
+        -l1*s1h-l2*s12h-l3*s123h -l2*s12h-l3*s123h -l3*s123h 1 0 -l0*sh-l1*s1h-l2*s12h-l3*s123h;
+         l1*c1h+l2*c12h+l3*c123h  l2*c12h+l3*c123h  l3*c123h 0 1  l0*ch+l1*c1h+l2*c12h+l3*c123h
+    ];
 
     dt1 = t_dot(1); dt2 = t_dot(2); dt3 = t_dot(3); dt4 = t_dot(4); dt5 = t_dot(5); dth = t_dot(6);
     J1_dot = [...
@@ -149,3 +175,5 @@ c123h = cos(t(1)+t(2)+t(3)+t(6));
         - 0.5*[t_dot*dAt1*t_dot', t_dot*dAt2*t_dot', t_dot*dAt3*t_dot', ...
         t_dot*dAt4*t_dot', t_dot*dAt5*t_dot', t_dot*dAt6*t_dot']' + g;
 end
+
+
