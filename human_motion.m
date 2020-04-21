@@ -25,7 +25,7 @@ ddqh = [ddxh ; ddyh; zeros(1,len)];
 ddq = [];
 tau = [];
 lambda = [];
-alpha = 40;
+alpha = -16;
 for i = 1:len
     if i == 1
 [ddq_, tau_, lambda_] = myQP(ddqh(1,i), ddqh(2,i), ddqh(3,i), ...
@@ -39,24 +39,35 @@ tau = [tau, tau_];
 lambda = [lambda, lambda_];
 end
 
-wd = 1.5;
+wd = 1;
 start = 1;
-subplot(221); 
-plot(start:len, tau(1,:), 'r' , 'Linewidth', wd); hold on;
-plot(start:len, tau(2,:), 'b' , 'Linewidth', wd);
-plot(start:len, tau(3,:), 'k' , 'Linewidth', wd);
-title('SuperLimb tau');
-subplot(222); 
-plot(start:len, tau(4,:), 'k' , 'Linewidth', wd); hold on;
-plot(start:len, tau(5,:), 'k' , 'Linewidth', wd);
-plot(start:len, tau(6,:), 'b' , 'Linewidth', wd);
+figure(1);
+subplot(311); 
+plot(start:len, tau(4,:), 'r' , 'Linewidth', wd); hold on;
 title('Human tau');
-subplot(223);
+subplot(312);
+plot(start:len, tau(5,:), 'b' , 'Linewidth', wd);hold on;
+subplot(313);
+plot(start:len, tau(6,:), 'k' , 'Linewidth', wd); hold on;
+figure(2)
+subplot(311); 
+plot(start:len, tau(1,:), 'r' , 'Linewidth', wd); hold on;
+title('SuperLimb tau');
+subplot(312); 
+plot(start:len, tau(2,:), 'b' , 'Linewidth', wd); hold on;
+subplot(313); 
+plot(start:len, tau(3,:), 'k' , 'Linewidth', wd); hold on;
+figure(3)
+subplot(211);
 plot(start:len, lambda(1,:), 'r' ,'Linewidth', wd); hold on;
-plot(start:len, lambda(2,:), 'b' ,'Linewidth', wd);
 title('Supporting force');
-subplot(224);
+subplot(212);
+plot(start:len, lambda(2,:), 'b' ,'Linewidth', wd); hold on;
+figure(4);
+subplot(211);
 plot(start:len, ddq(1,:), 'r' ,'Linewidth', wd); hold on;
-plot(start:len, ddq(2,:), 'b' ,'Linewidth', wd);
 title('ddqh');
+subplot(212);
+plot(start:len, ddq(2,:), 'b' ,'Linewidth', wd);
+
 end
