@@ -25,7 +25,7 @@ R_bar = R(1:2,1:2)^-1*Sk*Q'*Nkplus;
 W1 = [S_bar*A, Nkplus];
 W2 = [R_bar*A, -R_bar];
 W = [W1;-W1;W2;-W2];
-H = [eye(6), zeros(6,6);zeros(6,6), 2000*eye(6)]; f=zeros(12,1);
+H = [1000*eye(6), zeros(6,6);zeros(6,6), 2000*eye(6)]; f=zeros(12,1);
 
 lambda_ylim = alpha*(Jc*A^-1*Jc')^-1*Jc*[0,0,0,delta_ddqh1, delta_ddqh2, delta_ddqh3]';
 lambda_min_bound = 1;
