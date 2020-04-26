@@ -58,8 +58,10 @@ for i = 1:len-1
         Aqh = (A*ddq(:,i) + h);
 
         lambda_b = R_bar*Aqh;
-        Q = diag([1e5,1e5,1e5]); H = (Sh*Jc')'*Q*(Sh*Jc'); H = (H+H')/2; 
-        f = (Sh*Jc'*lambda_b)'*Q*(Sh*Jc');
+        tau_ini = [-0.6, 57, 0.8]';
+        W = Sh*Jc'; b = tau_ini - W*lambda_b;
+        Q = diag([1e5,1e5,1e5]); H = W'*Q*W; H = (H+H')/2; 
+        f = b'*Q*W;
 %         if abs(Aqh - tau(:,i) - Jc'*lambda(:,i))>1e3
 %             flag = 0
 %         end
@@ -126,32 +128,32 @@ figure(5)
 tau(:,1) = tau(:,2);tau(:,len) = tau(:,len-1);
 tau_opt(:,1) = tau_opt(:,2);tau_opt(:,len) = tau_opt(:,len-1);
 n = 6;
-subplot(n,1,1);plot(t, tau(1,:), 'b' , 'Linewidth', wd); hold on; 
+subplot(n,1,1);plot(t, tau(1,:), 'r' , 'Linewidth', wd); hold on; 
 % plot(t, tau_opt(1,:), 'r' , 'Linewidth', wd); 
 title('q_{s1} torques');
-subplot(n,1,2);plot(t, tau(2,:), 'b' , 'Linewidth', wd); hold on; 
+subplot(n,1,2);plot(t, tau(2,:), 'r' , 'Linewidth', wd); hold on; 
 % plot(t, tau_opt(2,:), 'r' , 'Linewidth', wd); 
 title('q_{s2} torques');
-subplot(n,1,3);plot(t, tau(3,:), 'b' , 'Linewidth', wd); hold on; 
+subplot(n,1,3);plot(t, tau(3,:), 'r' , 'Linewidth', wd); hold on; 
 % plot(t, tau_opt(3,:), 'r' , 'Linewidth', wd); 
 title('q_{s3} torques');
-subplot(n,1,4);plot(t, tau(4,:), 'b' , 'Linewidth', wd); hold on; 
+subplot(n,1,4);plot(t, tau(4,:), 'r' , 'Linewidth', wd); hold on; 
 % plot(t, tau_opt(4,:), 'r' , 'Linewidth', wd); 
 title('x_h torques');
-subplot(n,1,5);plot(t, tau(5,:), 'b' , 'Linewidth', wd); hold on; 
+subplot(n,1,5);plot(t, tau(5,:), 'r' , 'Linewidth', wd); hold on; 
 % plot(t, tau_opt(5,:), 'r' , 'Linewidth', wd); 
 title('y_h torques');
-subplot(n,1,6);plot(t, tau(6,:), 'b' , 'Linewidth', wd); hold on; 
+subplot(n,1,6);plot(t, tau(6,:), 'r' , 'Linewidth', wd); hold on; 
 % plot(t, tau_opt(6,:), 'r' , 'Linewidth', wd); 
 title('theta_h torques');
 
 figure(6)
 lambda(:,1) = lambda(:,2);lambda(:,len) = lambda(:,len-1);
 n = 2;
-subplot(n,1,1);plot(t, lambda(1,:), 'b' , 'Linewidth', wd); hold on;title('\lambda_x'); 
-ylim([-0.01,0.01]);
-subplot(n,1,2);plot(t, lambda(2,:), 'b' , 'Linewidth', wd); hold on;title('\lambda_y'); 
-ylim([-20-0.01,-20+0.01]);
+subplot(n,1,1);plot(t, lambda(1,:), 'r' , 'Linewidth', wd); hold on;title('\lambda_x'); 
+% ylim([-0.01,0.01]);
+subplot(n,1,2);plot(t, lambda(2,:), 'r' , 'Linewidth', wd); hold on;title('\lambda_y'); 
+% ylim([-20-0.01,-20+0.01]);
 
 end
 
@@ -174,3 +176,7 @@ function W_bar = dynamicalInv(A, W)
     A_inv = A^-1;
     W_bar = A_inv*W'*(W*A_inv*W')^-1;
 end
+
+
+
+
