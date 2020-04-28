@@ -31,8 +31,16 @@ q = [q0',zeros(6,len-1)];
 dq = zeros(6,len);
 ddq = zeros(6,len);
 tau = zeros(6,len);
-tau_opt = zeros(6,len);
 lambda = zeros(2,len);
+
+use_QP = 0;
+deepBlue = [0 0 139]/255;
+maroon = [207, 33, 71]/255;
+if use_QP == 0
+    color = deepBlue;
+else
+    color = maroon;
+end
 for i = 1:len-1
     if i == 1
         qs_tmp = [45*pi/180, 90*pi/180, -45*pi/180]' + Jhs^-1 * [xh(i+1)-xh(i), yh(i+1)-yh(i), 0]';
@@ -65,9 +73,12 @@ for i = 1:len-1
 %         if abs(Aqh - tau(:,i) - Jc'*lambda(:,i))>1e3
 %             flag = 0
 %         end
-%         sol = quadprog(H, f);
-%         tau(:,i) = Jc'*(lambda_b - sol);
-        tau(:,i) = Jc'*(lambda_b - [0,-20]');
+        if use_QP == 1
+            sol = quadprog(H, f);
+            tau(:,i) = Jc'*(lambda_b - sol);
+        else
+            tau(:,i) = Jc'*(lambda_b - [0,-20]');
+        end
         lambda(:,i) = R_bar*(Aqh-tau(:,i));
     end
 end
@@ -79,81 +90,83 @@ for i = 1:len
     [x(i), y(i)] = FK(q(:,i));
 end
 
-wd = 1;
+wd = 2;
 
 % figure(1)
-% plot(xh, yh,'b' , 'Linewidth', wd); axis equal; hold on;
-% n = 6;
+% plot(xh, yh, 'Color', color, 'Linewidth', wd); axis equal; hold on; xlabel('x_h (m)'); ylabel('y_h (m)');
+n = 6;
 % figure(2)
 % subplot(n,1,1);
-% plot(t, 180*q(1,:)/pi, 'b' , 'Linewidth', wd); hold on;
+% plot(t, 180*q(1,:)/pi, 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; ylabel('qs1 (degree)');
 % subplot(n,1,2);
-% plot(t, 180*q(2,:)/pi, 'b' , 'Linewidth', wd); hold on;
+% plot(t, 180*q(2,:)/pi, 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; ylabel('qs2 (degree)');
 % subplot(n,1,3);
-% plot(t, 180*q(3,:)/pi, 'b' , 'Linewidth', wd); hold on;
+% plot(t, 180*q(3,:)/pi, 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; ylabel('qs3 (degree)');
 % subplot(n,1,4);
-% plot(t, q(4,:), 'b' , 'Linewidth', wd+1); hold on;
-% plot(t, x, 'r' , 'Linewidth', wd);
+% plot(t, q(4,:), 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; ylabel('xh (m)');
+% % plot(t, x, 'r' , 'Linewidth', wd);
 % subplot(n,1,5);
-% plot(t, q(5,:), 'b' , 'Linewidth', wd+1); hold on;
-% plot(t, y, 'r' , 'Linewidth', wd);
+% plot(t, q(5,:), 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; ylabel('yh (m)');
+% % plot(t, y, 'r' , 'Linewidth', wd);
 % subplot(n,1,6);
-% plot(t, 180*q(6,:)/pi, 'b' , 'Linewidth', wd); hold on;
-% 
+% plot(t, 180*q(6,:)/pi, 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; xlabel('time (s)'); ylabel('thetah (degree)');
+
 % figure(3)
 % n = 6;
 % subplot(n,1,1);
-% plot(t, dq(1,:), 'b' , 'Linewidth', wd); hold on;
+% plot(t, dq(1,:), 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; ylabel('dqs1 (rad/s)');
 % subplot(n,1,2);
-% plot(t, dq(2,:), 'b' , 'Linewidth', wd); hold on;
+% plot(t, dq(2,:), 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; ylabel('dqs2 (rad/s)');
 % subplot(n,1,3);
-% plot(t, dq(3,:), 'b' , 'Linewidth', wd); hold on;
+% plot(t, dq(3,:), 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; ylabel('dqs3 (rad/s)');
 % subplot(n,1,4);
-% plot(t, dq(4,:), 'b' , 'Linewidth', wd); hold on;
+% plot(t, dq(4,:), 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; ylabel('dxh (m/s)');
 % subplot(n,1,5);
-% plot(t, dq(5,:), 'b' , 'Linewidth', wd); hold on;
+% plot(t, dq(5,:), 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; ylabel('dyh (m/s)');
 % subplot(n,1,6);
-% plot(t, dq(6,:), 'b' , 'Linewidth', wd); hold on;
-% 
-% figure(4)
-% n = 6;
-% subplot(n,1,1);plot(t, ddq(1,:), 'b' , 'Linewidth', wd); hold on;
-% subplot(n,1,2);plot(t, ddq(2,:), 'b' , 'Linewidth', wd); hold on;
-% subplot(n,1,3);plot(t, ddq(3,:), 'b' , 'Linewidth', wd); hold on;
-% subplot(n,1,4);plot(t, ddq(4,:), 'b' , 'Linewidth', wd); hold on;
-% subplot(n,1,5);plot(t, ddq(5,:), 'b' , 'Linewidth', wd); hold on;
-% subplot(n,1,6);plot(t, ddq(6,:), 'b' , 'Linewidth', wd); hold on;
+% plot(t, dq(6,:), 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; xlabel('time (s)'); ylabel('dthetah (rad/s)');
 
-figure(5)
-tau(:,1) = tau(:,2);tau(:,len) = tau(:,len-1);
-tau_opt(:,1) = tau_opt(:,2);tau_opt(:,len) = tau_opt(:,len-1);
+figure(4)
 n = 6;
-subplot(n,1,1);plot(t, tau(1,:), 'r' , 'Linewidth', wd); hold on; 
-% plot(t, tau_opt(1,:), 'r' , 'Linewidth', wd); 
-title('q_{s1} torques');
-subplot(n,1,2);plot(t, tau(2,:), 'r' , 'Linewidth', wd); hold on; 
-% plot(t, tau_opt(2,:), 'r' , 'Linewidth', wd); 
-title('q_{s2} torques');
-subplot(n,1,3);plot(t, tau(3,:), 'r' , 'Linewidth', wd); hold on; 
-% plot(t, tau_opt(3,:), 'r' , 'Linewidth', wd); 
-title('q_{s3} torques');
-subplot(n,1,4);plot(t, tau(4,:), 'r' , 'Linewidth', wd); hold on; 
-% plot(t, tau_opt(4,:), 'r' , 'Linewidth', wd); 
-title('x_h torques');
-subplot(n,1,5);plot(t, tau(5,:), 'r' , 'Linewidth', wd); hold on; 
-% plot(t, tau_opt(5,:), 'r' , 'Linewidth', wd); 
-title('y_h torques');
-subplot(n,1,6);plot(t, tau(6,:), 'r' , 'Linewidth', wd); hold on; 
-% plot(t, tau_opt(6,:), 'r' , 'Linewidth', wd); 
-title('theta_h torques');
+subplot(n,1,1);plot(t, ddq(1,:), 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; ylabel('ddqs1 (rad/s^2)');
+subplot(n,1,2);plot(t, ddq(2,:), 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; ylabel('ddqs2 (rad/s^2)');
+subplot(n,1,3);plot(t, ddq(3,:), 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; ylabel('ddqs3 (rad/s^2)');
+subplot(n,1,4);plot(t, ddq(4,:), 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; ylabel('ddxh (m/s^2)');
+subplot(n,1,5);plot(t, ddq(5,:), 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; ylabel('ddyh (m/s^2)');
+subplot(n,1,6);plot(t, ddq(6,:), 'Color', color, 'Linewidth', wd); xlim([0,3]); hold on; xlabel('time (s)'); ylabel('ddthetah (rad/s^2)');
 
-figure(6)
-lambda(:,1) = lambda(:,2);lambda(:,len) = lambda(:,len-1);
-n = 2;
-subplot(n,1,1);plot(t, lambda(1,:), 'r' , 'Linewidth', wd); hold on;title('\lambda_x'); 
-% ylim([-0.01,0.01]);
-subplot(n,1,2);plot(t, lambda(2,:), 'r' , 'Linewidth', wd); hold on;title('\lambda_y'); 
-% ylim([-20-0.01,-20+0.01]);
+
+
+
+% figure(5)
+% tau(:,1) = tau(:,2);tau(:,len) = tau(:,len-1);
+% n = 6;
+% subplot(n,1,1);plot(t, tau(1,:), 'Color', color, 'Linewidth', wd); hold on; 
+% xlim([0,3]);
+% title('q_{s1} torques');
+% subplot(n,1,2);plot(t, tau(2,:), 'Color', color, 'Linewidth', wd); hold on; 
+% xlim([0,3]);
+% title('q_{s2} torques');
+% subplot(n,1,3);plot(t, tau(3,:), 'Color', color, 'Linewidth', wd); hold on; 
+% xlim([0,3]);
+% title('q_{s3} torques');
+% subplot(n,1,4);plot(t, tau(4,:), 'Color', color, 'Linewidth', wd); hold on; 
+% xlim([0,3]);
+% title('x_h torques');
+% subplot(n,1,5);plot(t, tau(5,:), 'Color', color, 'Linewidth', wd); hold on; 
+% xlim([0,3]);
+% title('y_h torques');
+% subplot(n,1,6);plot(t, tau(6,:), 'Color', color, 'Linewidth', wd); hold on; 
+% xlim([0,3]);
+% title('theta_h torques');
+% 
+% figure(6)
+% lambda(:,1) = lambda(:,2);lambda(:,len) = lambda(:,len-1);
+% n = 2;
+% subplot(n,1,1);plot(t, lambda(1,:), 'Color', color, 'Linewidth', wd); hold on;title('\lambda_x'); 
+% xlim([0,3]); ylim([-0.3,0.3]);
+% subplot(n,1,2);plot(t, lambda(2,:), 'Color', color, 'Linewidth', wd); hold on;title('\lambda_y'); 
+% xlim([0,3]); ylim([-21,-18]);
 
 end
 
