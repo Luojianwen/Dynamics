@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     //映射
     //shmadd = shmat(shmid, NULL, 0);
     num = shmat(shmid, NULL, 0);
-    if(shmadd < 0)
+    if(*num < 0)
     {
         perror("shmat");
         exit(-1);
@@ -46,26 +46,8 @@ int main(int argc, char *argv[])
     //printf("data = [%s]\n", shmadd);
     while(1){
         printf("data = [%f, %f, %f, %f]\n", num[0], num[1], num[2], num[3]);
+        sleep(1);
     }
  
-    /*
-    //分离共享内存和当前进程
-    //ret = shmdt(shmadd);
-    ret = shmdt(num);
-    if(ret < 0)
-    {
-        perror("shmdt");
-        exit(1);
-    }
-    else
-    {
-        printf("deleted shared-memory\n");
-    }
- 
-    //删除共享内存
-    shmctl(shmid, IPC_RMID, NULL);
- 
-    //system("ipcs -m"); //查看共享内存
-    */
     return 0;
 }
