@@ -11,13 +11,12 @@
 int main(int argc, char *argv[])
 {
     int shmid;
-    int ret;
     key_t key;
-    char *shmadd;
+    //char *shmadd; // for char variable
     double *num;
  
     //创建key值
-    key = ftok("../", 2015);
+    key = ftok("../", 2015); // 1st parameter is file path, should be aligned with writing procedure.
     if(key == -1)
     {
         perror("ftok");
@@ -35,7 +34,7 @@ int main(int argc, char *argv[])
  
     //映射
     //shmadd = shmat(shmid, NULL, 0);
-    num = shmat(shmid, NULL, 0);
+    num = (double*) shmat(shmid, NULL, 0);
     if(*num < 0)
     {
         perror("shmat");
@@ -48,6 +47,6 @@ int main(int argc, char *argv[])
         printf("data = [%f, %f, %f, %f]\n", num[0], num[1], num[2], num[3]);
         sleep(1);
     }
- 
+    
     return 0;
 }
