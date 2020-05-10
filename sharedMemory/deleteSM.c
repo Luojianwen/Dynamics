@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     double *num;
  
     //创建key值
-    key = ftok("../", 2015);
+    key = ftok("~/", 2015); // 1st para is for file path
     if(key == -1)
     {
         perror("ftok");
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     }
  
     //映射
-    num = shmat(shmid, NULL, 0);
+    num = (double*) shmat(shmid, NULL, 0);
     if(*num < 0)
     {
         perror("shmat");
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        printf("deleted shared-memory\n");
+        printf("Shared-memory has been deleted. \n");
     }
  
     //删除共享内存
