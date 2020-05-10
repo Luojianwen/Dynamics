@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     double *num;
  
     //创建key值
-    key = ftok("../", 2015); // 1st parameter is file path, should be aligned with writing procedure.
+    key = ftok("~/", 2015); // 1st parameter is file path, should be aligned with writing procedure.
     if(key == -1)
     {
         perror("ftok");
