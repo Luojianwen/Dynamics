@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     double *num;
  
     //创建key值
-    key = ftok("../", 2015);
+    key = ftok("~/", 2015);
     if(key == -1)
     {
         perror("ftok");
