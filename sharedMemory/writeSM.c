@@ -11,9 +11,8 @@
 int main(int argc, char *argv[])
 {
     int shmid;
-    int ret;
     key_t key;
-    char *shmadd;
+    //char *shmadd; // for char variable
     double *num;
  
     //创建key值
@@ -33,7 +32,7 @@ int main(int argc, char *argv[])
  
     //映射
     //shmadd = shmat(shmid, NULL, 0);
-    num = shmat(shmid, NULL, 0);
+    num = (double*) shmat(shmid, NULL, 0);
     //if(shmadd < 0)
     if(*num < 0)
     {
@@ -53,7 +52,6 @@ int main(int argc, char *argv[])
     num[3] = 10.3;
     while(1)
     {
-        //bzero(num, BUFSZ); // 共享内存清空
         num[0] = num[0] + cnt;
         num[1] = num[1] + cnt;
         num[2] = num[2] + cnt;
